@@ -1,0 +1,8 @@
+---
+title: "Homework 1"
+author: "Boyu Jiang"
+date: "8/28/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
