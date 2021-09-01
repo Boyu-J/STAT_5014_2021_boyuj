@@ -1,0 +1,7 @@
+---
+title: "Homework 2"
+author: "Boyu Jiang"
+date: "9/1/2021"
+output: pdf_document
+---
+
