@@ -1,0 +1,115 @@
+---
+title: "Homework 2"
+author: "Boyu Jiang"
+date: "9/11/2021"
+output: pdf_document
+---
+# Problem 2
+
+## Part A
+
+| My learning objectives in this class:
+
+* Getting familiar with R programming, typesetting, and version control; 
+* Mastering various data visualization tools;
+* Learning data handling skills in R.
+
+## Part B
+
+1. Normal Distribution
+\begin{align}
+f(x) = \frac{1}{\sigma \sqrt{2\pi}}\ exp \left[-\frac{1}{2}\left(\frac{x-\mu}{\sigma}\right)^{\!2}\,\right] \mbox{, } \sigma > 0
+\end{align}
+
+2. Exponential Distribution
+\begin{align}
+f(x) = \frac{1}{ \beta } exp(-\frac{x}{\beta}) \mbox{, } x \ge 0 \mbox{, } \beta > 0
+\end{align}
+
+3. Cauchy Distribution
+\begin{align}
+f(x) = \frac{1}{\pi \sigma}\frac{1}{1+(\frac{x-\theta}{\sigma})^2}\mbox{, } \sigma > 0
+\end{align}
+
+# Problem 3
+
+| Steps in performing Reproducible Research:
+
+1. Before analysis: data storage and organization.
+  + Storing raw data in multiple locations using multiple media;
+  + Storing final data in a portable and non-proprietary format;
+  + Formatting final data appropriately for analysis. (Challenge: I found it hard to process raw data when there are various formatting problems.)
+
+2. During analysis: best coding practices.
+  + Making code clean, readable, and appropriately formatted;
+  + Commenting code thoroughly;
+  + Inviting at least one collaborator to review data and code;
+  + Documenting all software versions and computing environments.
+
+3. After analysis: finalizing results and sharing.
+  + Giving explicit instructions on locating data, metadata, and code in the manuscript; (Challenge: although my manuscript is full of figure, table, and formula, readers or reviewers think it is indistinct.)
+  + Sharing data, metadata, and code at a permanent site.
+
+# Problem 4
+
+```{r}
+library(data.table)
+covid_raw <- fread("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv")
+us <- covid_raw[covid_raw$countriesAndTerritories == 'United_States_of_America',]
+us_filtered <- us[us$month %in% c(6:7),]
+us_filtered$index <- rev(1:dim(us_filtered)[1]) 
+fit<-lm(`Cumulative_number_for_14_days_of_COVID-19_cases_per_100000`~index, 
+        data=us_filtered)
+```
+
+
+## Part A
+
+1. 
+```{r}
+library(knitr)
+kable(summary(us_filtered[, c('cases','deaths','popData2019',
+                      'Cumulative_number_for_14_days_of_COVID-19_cases_per_100000')]),
+      format = 'simple',align='l',col.names=c('cases','deaths','popData2019',
+                                              'Cumul.COVID19.Cases for 14 days per 100k'))
+
+library(plyr)
+kable(count(us_filtered, vars=c('month','year','countriesAndTerritories','geoId',
+                       'countryterritoryCode','continentExp')), align='l')
+```
+
+Since the time period was limited from June to July, there are 61 time points in us_filtered data. From these two tables, no missing value exists.
+
+2. 
+```{r}
+library(stargazer)
+stargazer(fit, title= "Fit Results", align=TRUE, type = 'text')
+```
+
+## Part B
+
+```{r}
+library(broom)
+fit.diags <- broom::augment(fit)
+plot(fit, 1)
+plot(fit, 2)
+plot(fit, 3)
+plot(fit, 5)
+```
+
+## Part C
+
+```{r}
+acf(fit.diags$.resid,type = "correlation")
+```
+
+# Problem 5
+
+```{r}
+par(mfrow=c(2,2),mar = c(2,2,1.5,0.5))
+plot(fit, 1)
+plot(fit, 2)
+plot(fit, 3)
+plot(fit, 5)
+```
+
