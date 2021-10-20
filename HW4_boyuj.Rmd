@@ -1,0 +1,244 @@
+---
+title: "HW4_boyuj"
+author: "Boyu Jiang"
+date: "10/16/2021"
+output: pdf_document
+---
+
+
+# Part A
+
+
+```{r message = FALSE, fig.cap = "Measurements of wall thickness by three operators"}
+library(dplyr)
+library(tidyr)
+library(reshape)
+
+# import data 
+pa <- read.delim("https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/ThicknessGauge.dat",
+                    header = FALSE, skip = 2, sep=" ")
+
+# rename the columns
+colnames(pa) <- c("part",
+                  "operator1.1st","operator1.2nd",
+                  "operator2.1st","operator2.2nd",
+                  "operator3.1st","operator3.2nd")
+
+# rearrange the data frame so that observations are distinguished by operator and measurement
+pa <- melt(pa, id.vars = "part")
+
+# separate operator and measurement into 2 columns
+pa <- separate(data = pa, col = 'variable', 
+               into = c("operator", "measurement"))
+pa$part <- factor(pa$part)
+pa$operator <- factor(pa$operator)
+pa$measurement <- factor(pa$measurement)
+
+# show the table of data (first 6 observations)
+knitr::kable(head(pa), caption = "Measurements of the part’s wall thickness (partial)")
+
+# show the summary table of data
+knitr::kable(summary(pa), caption="Summary of variables")
+
+# merge part and operator, compute the mean of 2-time measurement values
+paplot <- aggregate(x = pa$value, by = list(pa$part, pa$operator), FUN = mean)
+
+# plot the difference between each operator's measurement and mean value
+paplot['difference'] <- paplot$x - mean(paplot$x)
+ 
+barplot(difference ~ Group.2 + Group.1, 
+        data = paplot, 
+        beside = TRUE,
+        xlab = "Part", 
+        ylab = "Difference from the mean value of measurement",
+        col = c("skyblue2", "chocolate", "green"),
+        ylim = c(-0.004,0.002),
+        border = NA)
+legend("bottom", c("Operator 1", "Operator 2","Operator 3"),
+       fill = c("skyblue2", "chocolate", "green"), 
+       border = NA, horiz = TRUE)
+
+```
+
+
+# Part B
+
+
+```{r message = FALSE, fig.cap = "Body weight and brain weight"}
+library(dplyr)
+library(tidyr)
+library(reshape)
+
+# import data 
+pb <- read.delim("https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/BrainandBodyWeight.dat",
+                    header = FALSE, skip = 1, sep = " ")
+
+# rename the columns
+colnames(pb) <- rep(c("BodyWt", "BrainWt"), 3)
+
+# rearrange data frame to 2 columns
+pb <- rbind(pb[,1:2], pb[,3:4], pb[1:20,5:6])
+
+# show the table of data (first 6 observations)
+knitr::kable(head(pb), caption = "Body and brain weight (partial)")
+
+# show the summary table of data
+knitr::kable(summary(pb), caption="Summary of variables")
+
+# scatter plot and fitted simple linear model
+plot(x = pb$BodyWt, y = pb$BrainWt,
+     col = "blue", pch = 16, 
+     xlab = 'Body Weight (kg)', 
+     ylab = 'Brain Weight (g)')
+abline(lm(BrainWt ~ BodyWt, pb),
+       col = "red")
+legend(x = "topleft", legend = c("Raw data", "Regression line"), 
+       col = c("blue","red"), lty = c(0,1), pch = c(16,NA))
+```
+
+
+# Part C
+
+
+```{r message = FALSE, fig.cap = "Gold Medal performance for Olympic Men’s Long Jump"}
+library(dplyr)
+library(tidyr)
+library(reshape)
+library(data.table)
+
+# import data 
+pc <- read.delim("https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/LongJumpData.dat",
+                    header = FALSE, skip = 1, sep = " ")
+
+# rename the columns
+colnames(pc) <- rep(c("year", "long jump"), 4)
+
+# rearrange data frame to 2 columns
+pc <- rbind(pc[,1:2], pc[,3:4], pc[,5:6], pc[1:4, 7:8])
+pc$year <- pc$year + 1900
+
+# show the table of data (first 6 observations)
+knitr::kable(head(pc), caption = "Gold Medal performance for Olympic Men’s Long Jump (partial)")
+
+# show the summary table of data
+knitr::kable(summary(pc), caption="Summary of variables")
+
+# scatter plot and fitted simple linear model
+plot(pc, col = "red", lwd = 3,
+     type = 'l', 
+     xlab = 'Year', 
+     ylab = 'Gold Medal performance for Men’s Long Jump (inch)')
+```
+
+
+
+# Part D
+
+
+```{r message = FALSE, warning = FALSE, fig.cap = "Measurements of tomato yield"}
+library(dplyr)
+library(tidyr)
+library(reshape)
+library(data.table)
+
+# import data 
+pd <- fread("https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/tomato.dat",
+                    header = FALSE, skip = 0, sep = " ", sep2 = ",")
+
+# rename the columns
+colnames(pd) <- c("category", "10k", "20k", "30k")
+
+# separate columns
+pd <- separate(data = pd, col = '10k', 
+               into = c("10k.1", "10k.2", "10k.3"), 
+               remove = TRUE, sep = ',')
+pd <- separate(data = pd, col = '20k', 
+               into = c("20k.1", "20k.2", "20k.3"), 
+               remove = TRUE, sep = ',')
+pd <- separate(data = pd, col = '30k', 
+               into = c("30k.1", "30k.2", "30k.3"), 
+               remove = TRUE, sep = ',')
+
+# melt tomato categories so that observations are distinguished by Planting Density and measurement
+pd <- melt(pd, id.vars = "category")
+
+# separate columns to Planting Density and measurement
+pd <- separate(data = pd, col = 'variable', 
+               into = c("PlantingDensity", "measurement"), 
+               remove = TRUE)
+
+pd$category <- factor(pd$category)
+pd$PlantingDensity <- factor(pd$PlantingDensity)
+pd$measurement <- factor(pd$measurement)
+pd$value <- as.numeric(pd$value)
+
+# show the table of data (first 6 observations)
+knitr::kable(head(pd), caption = "Measurements of tomato yield (partial)")
+
+# show the summary table of data
+knitr::kable(summary(pd), caption="Summary of variables")
+
+# merge category and Planting Density, compute the mean of 3-time measurement values
+pdplot <- aggregate(x = pd$value, by = list(pd$category, pd$PlantingDensity), FUN = mean)
+
+# plot the yield by category and Planting Density
+barplot(x ~ Group.1 + Group.2, 
+        data = pdplot, 
+        beside = TRUE,
+        col = c("skyblue2", "chocolate"),
+        xlab = "Planting Density", 
+        ylab = "Mean value of measurements for Yield",
+        ylim = c(0,30),
+        border = NA)
+legend("top", c("Ife#1", "Pusa Early Dwarf"),
+       fill = c("skyblue2", "chocolate"), 
+       border = NA, horiz = TRUE)
+```
+
+
+
+# Part E
+
+
+```{r message = FALSE, warning = FALSE, fig.cap = "Larvae counts in different blocks"}
+library(dplyr)
+library(tidyr)
+library(reshape)
+library(data.table)
+library(ggplot2)
+
+# import data 
+pe <- read.delim("https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/LarvaeControl.dat",
+                    header = FALSE, skip = 3, sep = " ")
+
+pe <- pe[,colSums(is.na(pe))<nrow(pe)]
+
+# rename the columns
+colnames(pe) <- c("Block","Age1.Treatment1","Age1.Treatment2","Age1.Treatment3","Age1.Treatment4","Age1.Treatment5","Age2.Treatment1","Age2.Treatment2","Age2.Treatment3","Age2.Treatment4","Age2.Treatment5")
+
+
+# melt block so that observations are distinguished by age and treatment
+pe <- melt(as.data.table(pe), id.vars = "Block")
+
+# separate columns to Planting Density and measurement
+pe <- separate(data = pe, col = 'variable', 
+               into = c("age", "treatment"), 
+               remove = TRUE)
+
+pe$Block <- factor(pe$Block)
+pe$age <- factor(pe$age)
+pe$treatment <- factor(pe$treatment)
+
+# show the table of data (first 6 observations)
+knitr::kable(head(pe), caption = "Larvae counts at two ages (partial)")
+
+# show the summary table of data
+knitr::kable(summary(pe), caption="Summary of variables")
+
+# plot 
+ggplot(pe, aes(y = value, x = Block, 
+               color = treatment,
+               shape = age))+
+  geom_point(size = 4)+
+  ylab("Larvae counts")
+```
